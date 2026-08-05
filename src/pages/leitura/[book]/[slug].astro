@@ -1,0 +1,42 @@
+---
+import { getCollection, render } from 'astro:content';
+export async function getStaticPaths() {
+  const entries = await getCollection('books', ({ data }) => data.published);
+  return entries.map((entry) => ({ params: { book: entry.data.bookId, slug: entry.data.slug }, props: { entry } }));
+}
+const { entry } = Astro.props;
+const all = (await getCollection('books', ({ data }) => data.published && data.bookId === entry.data.bookId)).sort((a,b) => a.data.order-b.data.order);
+const everyChapter = await getCollection('books', ({ data }) => data.published);
+const books = [...new Set(everyChapter.map((item) => item.data.bookId))].map((id) => {
+  const chapters = everyChapter.filter((item) => item.data.bookId === id).sort((a,b)=>a.data.order-b.data.order);
+  return { id, title:chapters[0].data.bookTitle, label:chapters[0].data.bookLabel, opening:chapters[0].data.slug };
+});
+const index = all.findIndex((item) => item.id === entry.id);
+const previous = index > 0 ? all[index-1] : null;
+const next = index < all.length-1 ? all[index+1] : null;
+const { Content } = await render(entry);
+const description = entry.body.replace(/[#*_>—◆]/g,'').replace(/\s+/g,' ').trim().slice(0,160);
+const canonical = new URL(`/leitura/${entry.data.bookId}/${entry.data.slug}/`, Astro.site);
+---
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>{entry.data.label}: {entry.data.title} — Myrath</title>
+  <meta name="description" content={description}><link rel="canonical" href={canonical}>
+  <meta property="og:type" content="article"><meta property="og:title" content={`${entry.data.title} — Myrath`}>
+  <meta property="og:description" content={description}><meta property="og:url" content={canonical}>
+  <link rel="stylesheet" href="/leitura/reader.css"><meta name="theme-color" content="#081713">
+  <link rel="icon" href="/assets/favicon-64.png" type="image/png"><link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+</head>
+<body data-book={entry.data.bookId} data-chapter={entry.data.slug} data-index={index} data-total={all.length} data-reader-href={`/leitura/${entry.data.bookId}/${entry.data.slug}/`}>
+<a class="skip-reader" href="#chapter-body">Pular para o capítulo</a>
+<header class="reader-top"><a class="back" href="/#capitulos">← Voltar ao blog</a><a class="wordmark" href="/"><b>MYRATH</b><small>Contos dos Guardiões</small></a><div class="reader-tools"><button id="decrease" aria-label="Diminuir fonte">A−</button><button id="increase" aria-label="Aumentar fonte">A+</button><button id="theme" aria-label="Ativar tema escuro" aria-pressed="false">◐</button></div></header>
+<div class="progress" aria-hidden="true"><span id="progress"></span></div>
+<main class="reader-shell">
+<aside id="reader-index"><button class="index-toggle" id="index-toggle" aria-controls="index-content" aria-expanded="false">Índice e biblioteca <span>＋</span></button><div class="index-content" id="index-content"><p class="aside-label">BIBLIOTECA</p><nav id="book-nav">{books.map((book)=><a href={`/leitura/${book.id}/${book.opening}/`} class={book.id===entry.data.bookId?'active':''}><small>{book.label}</small><b>{book.title}</b></a>)}</nav><label for="chapter-select">Capítulo</label><select id="chapter-select">{all.map((chapter)=><option value={`/leitura/${chapter.data.bookId}/${chapter.data.slug}/`} data-key={`${chapter.data.bookId}/${chapter.data.slug}`} selected={chapter.id===entry.id}>{chapter.data.label} — {chapter.data.title}</option>)}</select><p class="book-progress" id="book-progress">0% do livro</p><div class="reader-search"><label for="chapter-search">Buscar neste capítulo</label><div><input id="chapter-search" type="search" placeholder="Palavra ou frase"><button id="search-button">Buscar</button></div><p id="search-result" role="status" aria-live="polite"></p></div><p class="storage-note">Seu progresso fica salvo somente neste dispositivo.</p><a class="pdf-link" target="_blank" rel="noopener" href={`/biblioteca/${entry.data.pdf}`}>Abrir PDF ↗</a></div></aside>
+<article id="reading"><div class="chapter-head"><p id="book-kicker">{entry.data.bookTitle}</p><h1>{entry.data.title}</h1><div class="chapter-meta"><span>{entry.data.label}</span><span>{entry.data.minutes} min de leitura</span><span>Capítulo {index+1} de {all.length}</span><span id="completion-status"></span></div><div class="reader-actions" id="reader-actions"><button id="complete-chapter">Marcar como concluído</button><button id="reset-progress">Reiniciar progresso</button><button id="share-chapter">Compartilhar</button><span id="action-status" role="status" aria-live="polite"></span></div></div><div id="chapter-body" class="chapter-body"><Content /></div><nav class="chapter-nav" aria-label="Navegação entre capítulos">{previous?<a href={`/leitura/${previous.data.bookId}/${previous.data.slug}/`}>← <span>{previous.data.title}</span></a>:<span></span>}{next?<a href={`/leitura/${next.data.bookId}/${next.data.slug}/`}><span>{next.data.title}</span> →</a>:<span></span>}</nav></article>
+</main>
+<footer><p>Myrath continua respirando.</p><a href="/">Retornar ao início</a></footer>
+<script src="/leitura/chapter.js"></script>
+</body></html>

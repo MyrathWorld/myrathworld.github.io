@@ -1,0 +1,21 @@
+{
+  "name": "Myrath — Contos dos Guardiões",
+  "short_name": "Myrath",
+  "lang": "pt-BR",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#eee6d8",
+  "theme_color": "#081713",
+  "icons": [
+    {
+      "src": "assets/favicon-64.png",
+      "sizes": "64x64",
+      "type": "image/png"
+    },
+    {
+      "src": "assets/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ]
+}
