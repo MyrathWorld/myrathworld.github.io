@@ -38,5 +38,5 @@ const canonical = new URL(`/leitura/${entry.data.bookId}/${entry.data.slug}/`, A
 <article id="reading"><div class="chapter-head"><p id="book-kicker">{entry.data.bookTitle}</p><h1>{entry.data.title}</h1><div class="chapter-meta"><span>{entry.data.label}</span><span>{entry.data.minutes} min de leitura</span><span>Capítulo {index+1} de {all.length}</span><span id="completion-status"></span></div><div class="reader-actions" id="reader-actions"><button id="complete-chapter">Marcar como concluído</button><button id="reset-progress">Reiniciar progresso</button><button id="share-chapter">Compartilhar</button><span id="action-status" role="status" aria-live="polite"></span></div></div><div id="chapter-body" class="chapter-body"><Content /></div><nav class="chapter-nav" aria-label="Navegação entre capítulos">{previous?<a href={`/leitura/${previous.data.bookId}/${previous.data.slug}/`}>← <span>{previous.data.title}</span></a>:<span></span>}{next?<a href={`/leitura/${next.data.bookId}/${next.data.slug}/`}><span>{next.data.title}</span> →</a>:<span></span>}</nav></article>
 </main>
 <footer><p>Myrath continua respirando.</p><a href="/">Retornar ao início</a></footer>
-<script src="/leitura/chapter.js"></script>
+<script is:inline src="/leitura/chapter.js"></script>
 </body></html>
